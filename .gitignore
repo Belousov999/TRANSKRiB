@@ -32,3 +32,11 @@ ffmpeg/
 
 # vscode
 .vscode/
+
+# private local spec
+docs/CTPortable_TZ.md
+
+
+# local private files
+docs/CTPortable_TZ.local.md
+
