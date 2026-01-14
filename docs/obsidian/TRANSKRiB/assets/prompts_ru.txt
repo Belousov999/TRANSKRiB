@@ -1,0 +1,64 @@
+# TRANSKRiB Prompts (RU) — с комментариями
+
+## PROMPT 1 (RU) — Архитектура и шаги
+```text
+Ты — технический ассистент. Нужна финальная схема проекта TRANSKRiB (Windows 10) из двух постоянно работающих скриптов: конвертор и GPU‑транскрибатор.
+Дай решение строго по шагам (1…N), коротко и практично: что где лежит, что мониторит, куда пишет, как запускается/останавливается без VSCode.
+Укажи точные пути, назначение папок, логи и правила удаления/архивации.
+
+[КОММЕНТАРИЙ] Для изменений обычно правят только PATHS/EXTS/MODELS и имена файлов.
+
+1) Скрипт №1: Конвертор (watchdog)
+- Watches: D:\TRANSKRiB\INPUT
+- Outputs WAV: D:\TRANSKRiB\TTGP\INPUTG
+- WAV 16kHz mono pcm_s16le из аудио/видео; удаляет входящие после успеха
+- Logs: D:\TRANSKRiB\CONVERTOR\ConvLog (daily)
+- ffmpeg: D:\TRANSKRiB\CONVERTOR\ffmpeg\bin\ffmpeg.exe
+- Single worker (queue + 1 worker)
+- CPU affinity: [2,3,4,5] via psutil; ffmpeg threads=2
+- Script: D:\TRANSKRiB\CONVERTOR\ToWavMono16.2c4t.py
+- Python: D:\TRANSKRiB\CONVERTOR\.venv\Scripts\python.exe (Python 3.13)
+
+2) Скрипт №2: TTGP GPU транскрибатор (watchdog)
+- Input: D:\TRANSKRiB\TTGP\INPUTG
+- TXT: D:\TRANSKRiB\!RESULT
+- WAV archive: D:\TRANSKRiB\WavARH
+- Logs: D:\TRANSKRiB\TTGP\TTGPlog (daily), archive: D:\TRANSKRiB\TTGP\LogARH
+- REJECT: D:\TRANSKRiB\TTGP\REJECTG
+- Models (startup only --model): 
+  - largev3: D:\TRANSKRiB\LargeV3
+  - turbo: D:\TRANSKRiB\ARH\turbo
+  - turboenru32: D:\TRANSKRiB\ARH\TurboEnRu3.2
+- Script: D:\TRANSKRiB\TTGP\TTGP_Go.060126.py
+- Python: D:\TRANSKRiB\TTGP\venv\Scripts\python.exe (Python 3.11 + CUDA)
+
+3) Управление
+- 4 bat: START_TURBO / START_TURBOENRU32 / START_LARGEV3 / STOP_ALL
+- BAT не активируют venv; вызывают python.exe напрямую; PID в D:\TRANSKRiB\RUN\*.pid
+```
+
+## PROMPT 2 (RU) — Сгенерировать финальные файлы (2 .py + 4 .bat)
+```text
+Сгенерируй финальные файлы проекта TRANSKRiB: 2 Python-скрипта и 4 BAT-файла. Без объяснений — только полный текст файлов.
+Формат: FILE: <полный путь>
+
+1) FILE: D:\TRANSKRiB\CONVERTOR\ToWavMono16.2c4t.py
+- watchdog monitors D:\TRANSKRiB\INPUT (recursive=False)
+- queue + 1 worker; wait file stable
+- ffmpeg path fixed; WAV 16k mono -> D:\TRANSKRiB\TTGP\INPUTG
+- delete source after success
+- daily log to ConvLog; psutil affinity [2,3,4,5]; ffmpeg threads=2
+- clean Ctrl+C shutdown
+
+2) FILE: D:\TRANSKRiB\TTGP\TTGP_Go.060126.py
+- watchdog monitors INPUTG; queue + 1 worker; seed existing files
+- validate WAV 16k mono, dur>=2s; reject otherwise
+- add YYYYMMDD_HHMM_ prefix via mtime if missing
+- output TXT to !RESULT; move WAV to WavARH; logs TTGPlog; archive logs
+- models local; choose only at startup --model
+- implement log-mel in code; no librosa/soxr; local_files_only=True
+- on_moved: ignore internal renames and moves out; accept only moves into INPUTG from outside
+
+3) FILES: D:\TRANSKRiB\RUN\START_*.bat + STOP_ALL.bat
+- call python.exe directly (no activate), write PID, stop by PID, preflight checks, optional redirect logs
+```

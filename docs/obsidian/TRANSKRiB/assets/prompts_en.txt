@@ -1,0 +1,41 @@
+# TRANSKRiB Prompts (EN) — with short comments
+
+## PROMPT 1 (EN) — Architecture + steps
+```text
+You are a technical assistant. Provide the final design for a Windows 10 project TRANSKRiB with two long-running scripts: a Converter and a GPU Transcriber.
+Deliver step-by-step instructions (1..N): where things live, what is watched, outputs, logs, and how to start/stop without VSCode.
+
+[COMMENT] To adapt, usually only edit PATHS/EXTS/MODELS and script names.
+
+1) Converter (watchdog)
+- Watches: D:\TRANSKRiB\INPUT
+- Outputs: D:\TRANSKRiB\TTGP\INPUTG
+- Convert audio/video -> WAV 16kHz mono pcm_s16le; delete source on success
+- Logs: D:\TRANSKRiB\CONVERTOR\ConvLog (daily)
+- ffmpeg: D:\TRANSKRiB\CONVERTOR\ffmpeg\bin\ffmpeg.exe
+- Single worker queue; psutil affinity [2,3,4,5]; ffmpeg threads=2
+- Script: D:\TRANSKRiB\CONVERTOR\ToWavMono16.2c4t.py
+- Python: D:\TRANSKRiB\CONVERTOR\.venv\Scripts\python.exe (Python 3.13)
+
+2) TTGP GPU Transcriber (watchdog)
+- Input: D:\TRANSKRiB\TTGP\INPUTG
+- TXT: D:\TRANSKRiB\!RESULT
+- WAV archive: D:\TRANSKRiB\WavARH
+- Logs: D:\TRANSKRiB\TTGP\TTGPlog; archive: D:\TRANSKRiB\TTGP\LogARH
+- REJECT: D:\TRANSKRiB\TTGP\REJECTG
+- Models (startup only --model): largev3/turbo/turboenru32 with local folders
+- Script: D:\TRANSKRiB\TTGP\TTGP_Go.060126.py
+- Python: D:\TRANSKRiB\TTGP\venv\Scripts\python.exe (Python 3.11 + CUDA)
+
+3) Control via 4 BAT files (start three models + stop), no venv activation, PID-based.
+```
+
+## PROMPT 2 (EN) — Generate final files (2 .py + 4 .bat)
+```text
+Generate final project files for TRANSKRiB: 2 Python scripts and 4 BAT files. No explanations, only full file contents.
+Use headers: FILE: <full path>
+
+- Converter script requirements: watchdog, single worker queue, wait stable file, ffmpeg fixed path, output WAV to INPUTG, delete source, daily logs, psutil affinity.
+- TTGP script requirements: watchdog + queue, seed existing files, validate WAV, add prefix by mtime, write TXT, archive WAV, logs, local models selected at startup only, in-code log-mel, proper on_moved filter.
+- BAT requirements: direct python.exe calls, PID files, STOP_ALL kills by PID, preflight checks.
+```

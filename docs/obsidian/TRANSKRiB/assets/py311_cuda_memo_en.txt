@@ -1,0 +1,13 @@
+# Memo: why TTGP (CUDA/GPU) stays on Python 3.11
+
+Converter (ffmpeg/CPU) can use any modern Python (here 3.13).
+TTGP (LargeV3 / CUDA) is pinned to Python 3.11 because on Windows+CUDA this is often the most stable and fastest combo with widely tested PyTorch CUDA wheels.
+
+Pinned TTGP venv:
+- Python 3.11.x
+- torch 2.5.1+cu118
+- torchaudio 2.5.1+cu118
+- torchvision 0.20.1+cu118
+- transformers 4.48.1
+- soundfile 0.13.1
+- watchdog 6.0.0

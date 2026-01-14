@@ -1,0 +1,13 @@
+# Памятка: почему TTGP (CUDA/GPU) держим на Python 3.11
+
+Конвертор (ffmpeg/CPU) можно на любом современном Python (у нас 3.13).
+TTGP (LargeV3 / CUDA) фиксируем на Python 3.11, потому что под Windows+CUDA это часто самая стабильная и быстрая связка с готовыми CUDA‑колёсами PyTorch.
+
+Рабочая конфигурация TTGP venv (из pip list):
+- Python 3.11.x
+- torch 2.5.1+cu118
+- torchaudio 2.5.1+cu118
+- torchvision 0.20.1+cu118
+- transformers 4.48.1
+- soundfile 0.13.1
+- watchdog 6.0.0
